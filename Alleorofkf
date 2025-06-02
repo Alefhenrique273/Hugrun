@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hitbox FPS Test</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+<script type="module">
+  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+  // Cena e câmera
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  // Luz
+  const light = new THREE.DirectionalLight(0xffffff, 1);
+  light.position.set(10, 10, 10);
+  scene.add(light);
+
+  // Inimigo
+  const enemy = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 2, 1),
+    new THREE.MeshStandardMaterial({ color: 0x00ff00 })
+  );
+  enemy.position.set(0, 1, -5); // na frente da câmera
+  scene.add(enemy);
+
+  // Hitbox maior manualmente
+  const hitbox = new THREE.Box3();
+  const extraSize = new THREE.Vector3(0.5, 1, 0.5); // aumenta em todas as direções
+
+  function updateHitbox(obj) {
+    const box = new THREE.Box3().setFromObject(obj);
+    box.expandByVector(extraSize);
+    hitbox.copy(box);
+  }
+
+  // Helper visual da hitbox
+  const hitboxHelper = new THREE.Box3Helper(hitbox, 0xff0000); // vermelho
+  scene.add(hitboxHelper);
+
+  // Posição da câmera (tipo FPS)
+  camera.position.set(0, 1.6, 0); // altura de jogador
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    updateHitbox(enemy);
+    hitboxHelper.box.copy(hitbox); // atualiza visual
+    renderer.render(scene, camera);
+  }
+
+  animate();
+</script>
+</body>
+</html>
